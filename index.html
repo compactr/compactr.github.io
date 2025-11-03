@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Compactr - OpenAPI Serialization</title>
+    <meta name="description" content="Compactr - OpenAPI serialization designed to reduce API response sizes.">
+	<meta name="color-scheme" content="light dark">
+
+	<meta name="keywords" content="serialize,openapi,swagger,compress,protobuf,encode,msgpack">
+	<meta name="author" content="Compactr">
+	<meta name="robots" content="index, follow">
+	<link rel="canonical" href="https://compactr.js.org/">
+
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://compactr.js.org/">
+	<meta property="og:title" content="Compactr - OpenAPI Serialization">
+	<meta property="og:description" content="Compactr - OpenAPI serialization designed to reduce API response sizes.">
+	<meta property="og:image" content="https://compactr.js.org/images/logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent: #ffa31e;
+            --accent-hover: #f90097;
+            --border: #30363d;
+            --code-bg: #0d1117;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fa;
+            --bg-tertiary: #eaeef2;
+            --text-primary: #24292f;
+            --text-secondary: #57606a;
+            --accent: #2e1f36;
+            --accent-hover: #f90097;
+            --border: #d0d7de;
+            --code-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-primary);
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-img {
+            height: 32px;
+            width: 32px;
+        }
+
+        .logo-large {
+            width: 25%;
+            max-width: 200px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            /*background: linear-gradient(120deg, var(--accent) 0%, var(--accent-hover) 100%);*/
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(120deg, var(--accent) 0%, var(--accent-hover) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 24px;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 32px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        /* Code Section */
+        .code-section {
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+        }
+
+        .code-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 40px;
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Enhanced contrast for code syntax highlighting */
+        .keyword { color: #ff8b92; font-weight: 600; }
+        .function { color: #dcbfff; font-weight: 600; }
+        .string { color: #96d0ff; }
+        .comment { color: #8b949e; font-style: italic; }
+        .number { color: #a5d6ff; }
+
+        [data-theme="light"] .keyword { color: #cf222e; }
+        [data-theme="light"] .function { color: #8250df; }
+        [data-theme="light"] .string { color: #0969da; }
+        [data-theme="light"] .comment { color: #6e7781; }
+        [data-theme="light"] .number { color: #0969da; }
+
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+
+        /* Benchmark Section */
+        .benchmark {
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+        }
+
+        .benchmark h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 40px;
+        }
+
+        .benchmark-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 30px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        /* Comparison Table */
+        .comparison {
+            padding: 80px 20px;
+            background: var(--bg-secondary);
+        }
+
+        .comparison h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .comparison p {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-primary);
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            position: sticky;
+            top: 0;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        td:first-child {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .check {
+            color: #3fb950;
+            font-weight: bold;
+        }
+
+        .cross {
+            color: #f85149;
+            font-weight: bold;
+        }
+
+        .partial {
+            color: #d29922;
+            font-weight: bold;
+        }
+
+        .disclaimer {
+            display: block;
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                flex-direction: column;
+                padding: 20px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">
+                <img src="./images/logo.png" alt="Compactr" class="logo-img">
+                Compactr
+            </a>
+            <button class="mobile-menu-toggle" aria-label="Toggle menu">☰</button>
+            <ul class="nav-links">
+                <li><a href="https://github.com/compactr/compactr.js">Github</a></li>
+                <li><a href="https://www.npmjs.com/package/compactr">NPM</a></li>
+                <li><button class="theme-toggle" aria-label="Toggle theme">🌙</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <img src="./images/logo.png" alt="Compactr" class="logo-large">
+                <h1>Compactr</h1>
+                <span class="subtitle">OpenAPI Serialization</span>
+                <p>Leverage your existing OpenAPI 3.x schemas to dramatically reduce API response sizes</p>
+                <div class="hero-buttons">
+                    <a href="https://www.npmjs.com/package/compactr" class="btn btn-primary">Get Started</a>
+                    <a href="https://github.com/compactr/compactr.js" class="btn btn-secondary">View on Github</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="code-section">
+            <div class="container">
+                <h2>Quick Start</h2>
+                <pre><code><span class="keyword">import</span> { schema } <span class="keyword">from</span> <span class="string">'compactr'</span>;
+
+<span class="keyword">const</span> userSchema = schema({
+  <span class="string">type</span>: <span class="string">'object'</span>,
+  <span class="string">properties</span>: {
+    <span class="string">id</span>: { <span class="string">type</span>: <span class="string">'string'</span>, <span class="string">format</span>: <span class="string">'uuid'</span> },
+    <span class="string">name</span>: { <span class="string">type</span>: <span class="string">'string'</span> },
+    <span class="string">age</span>: { <span class="string">type</span>: <span class="string">'integer'</span>, <span class="string">format</span>: <span class="string">'int32'</span> },
+    <span class="string">balance</span>: { <span class="string">type</span>: <span class="string">'number'</span>, <span class="string">format</span>: <span class="string">'double'</span> },
+    <span class="string">created</span>: { <span class="string">type</span>: <span class="string">'string'</span>, <span class="string">format</span>: <span class="string">'date-time'</span> },
+    <span class="string">tags</span>: { <span class="string">type</span>: <span class="string">'array'</span>, <span class="string">items</span>: { <span class="string">type</span>: <span class="string">'string'</span> } }
+  }
+});
+
+<span class="comment">// Encode data</span>
+<span class="keyword">const</span> encoded = userSchema.<span class="function">write</span>(data);
+
+<span class="comment">// Decode data</span>
+<span class="keyword">const</span> decoded = userSchema.<span class="function">read</span>(buffer);</code></pre>
+            </div>
+        </section>
+
+        <section class="comparison">
+            <div class="container">
+                <h2>How Does It Compare?</h2>
+                <p>Compactr offers a unique balance of speed and compression efficiency. Best of all, if your API already has a JSON-API schema, you don't need to redefine anything. It will just work!*</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>JSON</th>
+                                <th>Compactr</th>
+                                <th>MessagePack</th>
+                                <th>Protobuf</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Schema Definition</td>
+                                <td><span class="cross">✗</span></td>
+                                <td><span class="check">OpenAPI 3.x</span></td>
+                                <td><span class="cross">✗</span></td>
+                                <td><span class="partial">Custom .proto</span></td>
+                            </tr>
+                            <tr>
+                                <td>Compression Ratio (Realistic scenario)</td>
+                                <td>277 bytes</td>
+                                <td>78 bytes (~3.5x)</td>
+                                <td>227 bytes (~1.2x)</td>
+                                <td>129 bytes (~2.1x)</td>
+                            </tr>
+                            <tr>
+                                <td>Bundle Size</td>
+                                <td>Native</td>
+                                <td>~10KB</td>
+                                <td>~10KB</td>
+                                <td>~20KB</td>
+                            </tr>
+                            <tr>
+                                <td>API-Optimized Types</td>
+                                <td><span class="cross">✗</span></td>
+                                <td><span class="check">UUID, IPv4/6, DateTime, Binary</span></td>
+                                <td><span class="partial">Limited</span></td>
+                                <td><span class="cross">✗</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <span class="disclaimer">*Compactr support Swagger/OpenAPI 3.x schema definitions and features, such as `oneOf`, `anyOf` and local references `$ref`. All definitions must be provided in JS object format, compactr will not parse YAML.</span>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Apache 2.0 © 2025 Frederic Charette</p>
+            <p>
+                <a href="https://github.com/compactr/compactr.js">GitHub</a> ·
+                <a href="https://www.npmjs.com/package/compactr">NPM</a> ·
+                <a href="https://github.com/compactr/compactr.js/blob/v3.0.0/README.md">Documentation</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.querySelector('.theme-toggle');
+        const html = document.documentElement;
+
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', currentTheme);
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+
+        themeToggle.addEventListener('click', () => {
+            const theme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('nav')) {
+                navLinks.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
